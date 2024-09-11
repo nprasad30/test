@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: Job Description Generator
+  version: 1.0.0
+paths:
+  /generate-job-description:
+    post:
+      summary: Generate a job description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company_name:
+                  type: string
+                position_title:
+                  type: string
+                key_responsibilities:
+                  type: array
+                  items:
+                    type: string
+                required_skills:
+                  type: array
+                  items:
+                    type: string
+                preferred_qualifications:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - company_name
+                - position_title
+                - key_responsibilities
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:    
+              schema:
+                type: object
+                properties:
+                  job_description:
+                    type: string
