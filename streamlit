@@ -1,0 +1,42 @@
+import streamlit as st
+import boto3
+import json
+
+bedrock_agent_runtime = boto3.client('bedrock-agent-runtime')
+
+AGENT_ID = 'your-agent-id'  # Replace with your actual Agent ID
+AGENT_ALIAS_ID = 'your-agent-alias-id'  # Replace with your actual Agent Alias ID
+
+def invoke_agent(input_text):
+    response = bedrock_agent_runtime.invoke_agent(
+        agentId=AGENT_ID,
+        agentAliasId=AGENT_ALIAS_ID,
+        sessionId='recruitment-session',
+        inputText=input_text
+    )
+    return json.loads(response['completion'])
+
+st.title('Recruitment Assistant')
+
+task = st.selectbox('Select Task', ['Generate Job Description', 'Generate Interview Questions'])
+
+if task == 'Generate Job Description':
+    job_title = st.text_input('Job Title')
+    department = st.text_input('Department')
+    key_responsibilities = st.text_area('Key Responsibilities (one per line)')
+
+    if st.button('Generate Job Description'):
+        responsibilities_list = key_responsibilities.split('\n')
+        input_text = f"Using the job description dataset, generate a job description for {job_title} in {department} with responsibilities: {', '.join(responsibilities_list)}"
+        result = invoke_agent(input_text)
+        st.markdown(result['job_description'])
+
+elif task == 'Generate Interview Questions':
+    job_title = st.text_input('Job Title')
+    job_description = st.text_area('Job Description')
+
+    if st.button('Generate Interview Questions'):
+        input_text = f"Using the interview question bank, generate interview questions for {job_title} with description: {job_description}"
+        result = invoke_agent(input_text)
+        for question in result['interview_questions']:
+            st.write(f"- {question}")
