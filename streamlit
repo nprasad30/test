@@ -1,6 +1,5 @@
 import streamlit as st
 import boto3
-import json
 
 bedrock_agent_runtime = boto3.client('bedrock-agent-runtime')
 
@@ -9,6 +8,7 @@ AGENT_ALIAS_ID = 'your-agent-alias-id'  # Replace with your actual Agent Alias I
 
 def invoke_agent(input_text):
     try:
+        st.write("Sending to agent:", input_text)  # Debug output
         response = bedrock_agent_runtime.invoke_agent(
             agentId=AGENT_ID,
             agentAliasId=AGENT_ALIAS_ID,
@@ -25,34 +25,32 @@ def invoke_agent(input_text):
                 if 'bytes' in chunk:
                     full_response += chunk['bytes'].decode('utf-8')
         
+        st.write("Raw response from agent:", full_response)  # Debug output
         return full_response.strip()
     except Exception as e:
         st.error(f"Error invoking agent: {str(e)}")
         return None
 
-# The rest of your Streamlit app code remains the same
-st.title('Recruitment Assistant')
+def main():
+    st.title('AI Recruitment Assistant')
 
-task = st.selectbox('Select Task', ['Generate Job Description', 'Generate Interview Questions'])
+    task = st.selectbox('Select Task', ['Generate Job Description', 'Generate Interview Questions', 'General Recruitment Query'])
 
-if task == 'Generate Job Description':
-    job_title = st.text_input('Job Title')
-    department = st.text_input('Department')
-    key_responsibilities = st.text_area('Key Responsibilities (one per line)')
+    query = st.text_area('Enter your query', height=200, 
+                         help="For best results, include relevant details such as job title, company name, and key responsibilities in your query.")
 
-    if st.button('Generate Job Description'):
-        responsibilities_list = key_responsibilities.split('\n')
-        input_text = f"Using the job description dataset, generate a job description for {job_title} in {department} with responsibilities: {', '.join(responsibilities_list)}"
-        result = invoke_agent(input_text)
+    if st.button('Submit Query'):
+        if task == 'Generate Job Description':
+            prompt = f"Task: Generate a detailed job description based on the following information:\n\n{query}"
+        elif task == 'Generate Interview Questions':
+            prompt = f"Task: Generate a set of relevant interview questions based on the following job information:\n\n{query}"
+        else:  # General Recruitment Query
+            prompt = f"Task: Assist with the following recruitment query:\n\n{query}"
+
+        result = invoke_agent(prompt)
         if result:
+            st.markdown("### AI Assistant Response:")
             st.markdown(result)
 
-elif task == 'Generate Interview Questions':
-    job_title = st.text_input('Job Title')
-    job_description = st.text_area('Job Description')
-
-    if st.button('Generate Interview Questions'):
-        input_text = f"Using the interview question bank, generate interview questions for {job_title} with description: {job_description}"
-        result = invoke_agent(input_text)
-        if result:
-            st.markdown(result)
+if __name__ == "__main__":
+    main()
