@@ -41,6 +41,13 @@ vpc_id=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "V
 # Get the first subnet ID in the default VPC
 subnet_id=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$vpc_id" --query "Subnets[0].SubnetId" --output text)
 
+security_group_id=$(aws ec2 create-security-group \
+    --group-name talent-site-sg \
+    --description "Security group for talent site" \
+    --vpc-id $(aws ec2 describe-subnets --subnet-ids $public_subnet_id --query 'Subnets[0].VpcId' --output text) \
+    --query 'GroupId' --output text)
+
+
 # Create ECS service
 aws ecs create-service \
     --cluster talent-site-cluster \
