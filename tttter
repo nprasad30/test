@@ -1,0 +1,81 @@
+I apologize for the assumption. Let's create a new key pair for you and then proceed with the EC2 instance creation. Here's how we'll do it:
+
+1. First, let's create a new key pair:
+
+```bash
+key_name="talent-site-key"
+aws ec2 create-key-pair --key-name $key_name --query 'KeyMaterial' --output text > ${key_name}.pem
+
+# Set the correct permissions for the key file
+chmod 400 ${key_name}.pem
+
+echo "New key pair '${key_name}' created and saved to ${key_name}.pem"
+```
+
+2. Now, let's create the security group (if you haven't already):
+
+```bash
+security_group_id=$(aws ec2 create-security-group \
+    --group-name talent-site-sg \
+    --description "Security group for talent site" \
+    --query 'GroupId' \
+    --output text)
+
+# Allow inbound traffic on port 22 (SSH) and 80 (HTTP)
+aws ec2 authorize-security-group-ingress \
+    --group-id $security_group_id \
+    --protocol tcp \
+    --port 22 \
+    --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+    --group-id $security_group_id \
+    --protocol tcp \
+    --port 80 \
+    --cidr 0.0.0.0/0
+
+echo "Security Group ID: $security_group_id"
+```
+
+3. Create the EC2 instance using the new key pair:
+
+```bash
+instance_id=$(aws ec2 run-instances \
+    --image-id ami-0aa7d40eeae50c9a9 \
+    --count 1 \
+    --instance-type t2.micro \
+    --key-name $key_name \
+    --security-group-ids $security_group_id \
+    --user-data file://user-data.txt \
+    --query 'Instances[0].InstanceId' \
+    --output text)
+
+echo "Instance ID: $instance_id"
+```
+
+Make sure you have created the `user-data.txt` file as described in my previous message.
+
+4. Wait for the instance to be running and get its public IP:
+
+```bash
+aws ec2 wait instance-running --instance-ids $instance_id
+
+public_ip=$(aws ec2 describe-instances \
+    --instance-ids $instance_id \
+    --query 'Reservations[0].Instances[0].PublicIpAddress' \
+    --output text)
+
+echo "Your talent site is accessible at: http://$public_ip"
+```
+
+5. You can now connect to your instance using SSH with the new key:
+
+```bash
+ssh -i ${key_name}.pem ec2-user@$public_ip
+```
+
+Remember to keep the `${key_name}.pem` file secure, as it's needed to access your EC2 instance.
+
+Your talent site should be accessible at `http://<public_ip>`, and you can use the `/api/post-job` endpoint for posting jobs.
+
+Is there anything else you'd like me to explain or help with?
