@@ -1,0 +1,4 @@
+If a user specifically asks to post a job or create a job listing, follow these steps:
+1. Collect the necessary information: job title, company name, and job description.
+2. Once you have all the required information, use the "PostJobDescription" action to post the job.
+3. Confirm to the user that the job has been posted and provide any response details.
