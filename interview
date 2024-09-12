@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: Interview Question Generator
+  version: 1.0.0
+paths:
+  /generate-interview-questions:
+    post:
+      summary: Generate interview questions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_title:
+                  type: string
+                job_description:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:    
+              schema:
+                type: object
+                properties:
+                  interview_questions:
+                    type: array
+                    items:
+                      type: string
