@@ -16,13 +16,21 @@ def invoke_agent(input_text):
             inputText=input_text
         )
         
-        # Extract the actual response content
-        response_body = response['completion']
-        return response_body
+        # Process the EventStream
+        event_stream = response['completion']
+        full_response = ""
+        for event in event_stream:
+            if 'chunk' in event:
+                chunk = event['chunk']
+                if 'bytes' in chunk:
+                    full_response += chunk['bytes'].decode('utf-8')
+        
+        return full_response.strip()
     except Exception as e:
         st.error(f"Error invoking agent: {str(e)}")
         return None
 
+# The rest of your Streamlit app code remains the same
 st.title('Recruitment Assistant')
 
 task = st.selectbox('Select Task', ['Generate Job Description', 'Generate Interview Questions'])
