@@ -1,0 +1,73 @@
+I understand. If you're getting packet loss when pinging the public IP, there could be a few reasons for this. Let's troubleshoot step by step:
+
+1. First, let's verify that the task is actually running:
+
+```bash
+aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[]' --output text
+```
+
+If this returns a task ARN, let's check its status:
+
+```bash
+task_arn=$(aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[]' --output text)
+aws ecs describe-tasks --cluster talent-site-cluster --tasks $task_arn --query 'tasks[].lastStatus' --output text
+```
+
+This should return "RUNNING" if the task is up and running.
+
+2. Check the security group rules:
+
+```bash
+security_group_id=$(aws ecs describe-services --cluster talent-site-cluster --services talent-site-service --query 'services[].networkConfiguration.awsvpcConfiguration.securityGroups[]' --output text)
+
+aws ec2 describe-security-groups --group-ids $security_group_id --query 'SecurityGroups[].IpPermissions[]'
+```
+
+Make sure there's an inbound rule allowing traffic on port 80 from anywhere (0.0.0.0/0).
+
+3. Verify the subnet is public:
+
+```bash
+subnet_id=$(aws ecs describe-services --cluster talent-site-cluster --services talent-site-service --query 'services[].networkConfiguration.awsvpcConfiguration.subnets[]' --output text)
+
+aws ec2 describe-route-tables --filters "Name=association.subnet-id,Values=$subnet_id" --query 'RouteTables[].Routes[?DestinationCidrBlock==`0.0.0.0/0`]'
+```
+
+This should show a route to an Internet Gateway (igw-xxxxxxxx) for the 0.0.0.0/0 destination.
+
+4. Check if the task has a public IP:
+
+```bash
+task_arn=$(aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[]' --output text)
+eni_id=$(aws ecs describe-tasks --cluster talent-site-cluster --tasks $task_arn --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+public_ip=$(aws ec2 describe-network-interfaces --network-interface-ids $eni_id --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+
+echo "Public IP: $public_ip"
+```
+
+If all these checks pass and you're still having issues, let's try to access the application using curl:
+
+```bash
+curl -v http://$public_ip
+```
+
+This will show more detailed information about the connection attempt.
+
+5. If curl also fails, let's check the ECS service events for any issues:
+
+```bash
+aws ecs describe-services --cluster talent-site-cluster --services talent-site-service --query 'services[0].events[:5]'
+```
+
+This will show the most recent events for the service, which might provide clues about any problems.
+
+6. Finally, let's check the logs of the task:
+
+```bash
+task_id=$(aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[0]' --output text | awk -F'/' '{print $3}')
+aws logs get-log-events --log-group-name /ecs/talent-site-task --log-stream-name ecs/talent-site-container/$task_id --limit 10
+```
+
+This assumes you've set up CloudWatch logs for your task. If you haven't, we might need to update the task definition to include logging.
+
+After running through these checks, we should have a better idea of what's causing the issue. Let me know the results, and we can proceed from there!
