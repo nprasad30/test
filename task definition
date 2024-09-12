@@ -4,7 +4,7 @@
     "containerDefinitions": [
         {
             "name": "talent-site-container",
-            "image": "013831505904.dkr.ecr.us-east-1.amazonaws.com/talent-site:latest",
+            "image": ".dkr.ecr.us-east-1.amazonaws.com/talent-site:latest",
             "portMappings": [
                 {
                     "containerPort": 80,
