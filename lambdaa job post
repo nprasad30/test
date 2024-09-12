@@ -1,0 +1,32 @@
+import json
+import requests
+
+TALENT_SITE_URL = 'http://localhost:5000/api/post-job'  # Update this URL when deploying
+
+def lambda_handler(event, context):
+    job_title = event.get('job_title')
+    company_name = event.get('company_name')
+    job_description = event.get('job_description')
+    
+    if not all([job_title, company_name, job_description]):
+        return {
+            'statusCode': 400,
+            'body': json.dumps('Missing required fields')
+        }
+    
+    try:
+        response = requests.post(TALENT_SITE_URL, json={
+            'job_title': job_title,
+            'company_name': company_name,
+            'job_description': job_description
+        })
+        response.raise_for_status()
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response.json())
+        }
+    except requests.RequestException as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Error posting job: {str(e)}')
+        }
