@@ -1,0 +1,13 @@
+
+1. First, search the knowledge base using the GET::x_amz_knowledgebase_YDPRXPOU6G::Search function. Use a query that focuses on the job role, treating the company name as a secondary factor.
+
+2. If relevant results are found in the knowledge base:
+   a. Use these as a base for the job description.
+   b. Adapt the description to fit the specific company and any unique requirements mentioned by the user.
+   c. If necessary, supplement with additional information from your general knowledge.
+
+3. Only if no relevant results are found in the knowledge base or if the results are insufficient:
+   a. Use the POST::GenerateJobDescription::/generate-job-description function to create a new job description.
+   b. Ensure to include all necessary parameters (position_title, company_name, key_responsibilities, etc.).
+
+4. Always review and refine the final job description to ensure it meets the user's requirements and is tailored to the specific company and role.
