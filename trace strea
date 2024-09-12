@@ -1,0 +1,64 @@
+def invoke_agent(input_text, enable_trace=False):
+    try:
+        response = bedrock_agent_runtime.invoke_agent(
+            agentId=AGENT_ID,
+            agentAliasId=AGENT_ALIAS_ID,
+            sessionId='recruitment-session',
+            inputText=input_text,
+            enableTrace=enable_trace
+        )
+        
+        # Process the EventStream
+        event_stream = response['completion']
+        full_response = ""
+        trace = []
+        for event in event_stream:
+            if 'chunk' in event:
+                chunk = event['chunk']
+                if 'bytes' in chunk:
+                    full_response += chunk['bytes'].decode('utf-8')
+            if enable_trace and 'trace' in event:
+                trace.append(event['trace'])
+        
+        return full_response.strip(), trace
+    except Exception as e:
+        st.error(f"Error invoking agent: {str(e)}")
+        return None, None
+
+def main():
+    st.title('AI Recruitment Assistant')
+    
+    # Add a sidebar for the trace toggle
+    with st.sidebar:
+        enable_trace = st.toggle('Enable Reasoning Trace', value=False)
+    
+    st.markdown("""
+    Examples of queries you can ask:
+    - Generate a job description for a Software Engineer at TechCorp
+    - Create interview questions for a Marketing Manager position
+    - What are best practices for conducting a remote interview?
+    
+    Enter your query below:
+    """)
+    
+    query = st.text_area('Enter your query', height=100)
+    
+    if st.button('Submit Query'):
+        if query:
+            with st.spinner('AI Assistant is thinking...'):
+                result, trace = invoke_agent(query, enable_trace)
+            
+            if result:
+                st.markdown("### AI Assistant Response:")
+                st.markdown(result)
+                
+                if enable_trace and trace:
+                    with st.expander("View Reasoning Trace"):
+                        st.json(trace)
+            else:
+                st.warning("No response received. Please try again.")
+        else:
+            st.warning("Please enter a query before submitting.")
+
+if __name__ == "__main__":
+    main()
