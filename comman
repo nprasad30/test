@@ -1,0 +1,51 @@
+# Get your AWS account ID
+aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+
+# Set your AWS region
+aws_region=$(aws configure get region)
+
+# Update the task definition file with your account ID and region
+sed -i "s/<your-account-id>/$aws_account_id/g" task-definition.json
+sed -i "s/<your-region>/$aws_region/g" task-definition.json
+
+# Create ECR repository
+aws ecr create-repository --repository-name talent-site
+
+# Login to ECR
+aws ecr get-login-password --region $aws_region | docker login --username AWS --password-stdin $aws_account_id.dkr.ecr.$aws_region.amazonaws.com
+
+# Build Docker image
+docker build -t talent-site .
+
+# Tag the image
+docker tag talent-site:latest $aws_account_id.dkr.ecr.$aws_region.amazonaws.com/talent-site:latest
+
+# Push the image to ECR
+docker push $aws_account_id.dkr.ecr.$aws_region.amazonaws.com/talent-site:latest
+
+# Create ECS cluster
+aws ecs create-cluster --cluster-name talent-site-cluster
+
+# Register task definition
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+# Create a security group for the ECS tasks
+security_group_id=$(aws ec2 create-security-group --group-name talent-site-sg --description "Security group for talent site" --query 'GroupId' --output text)
+
+# Add an inbound rule to allow traffic on port 80
+aws ec2 authorize-security-group-ingress --group-id $security_group_id --protocol tcp --port 80 --cidr 0.0.0.0/0
+
+# Get the default VPC ID
+vpc_id=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)
+
+# Get the first subnet ID in the default VPC
+subnet_id=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$vpc_id" --query "Subnets[0].SubnetId" --output text)
+
+# Create ECS service
+aws ecs create-service \
+    --cluster talent-site-cluster \
+    --service-name talent-site-service \
+    --task-definition talent-site-task \
+    --desired-count 1 \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[$subnet_id],securityGroups=[$security_group_id],assignPublicIp=ENABLED}"
