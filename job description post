@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  title: Post Job Description API
+  version: 1.0.0
+paths:
+  /post-job:
+    post:
+      summary: Post a job description
+      operationId: postJobDescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_title:
+                  type: string
+                company_name:
+                  type: string
+                job_description:
+                  type: string
+              required:
+                - job_title
+                - company_name
+                - job_description
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  job_id:
+                    type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
