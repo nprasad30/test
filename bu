@@ -1,70 +1,39 @@
-Traceback (most recent call last):
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
-    return self.wsgi_app(environ, start_response)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
-    response = self.handle_exception(e)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
-  File "/Users/nivipr/Downloads/templates/app.py", line 11, in index
-    return render_template('index.html', jobs=job_postings.values())
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 149, in render_template
-    template = app.jinja_env.get_or_select_template(template_name_or_list)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 1081, in get_or_select_template
-    return self.get_template(template_name_or_list, parent, globals)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 1010, in get_template
-    return self._load_template(name, globals)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 969, in _load_template
-    template = self.loader.load(self, name, self.make_globals(globals))
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/loaders.py", line 125, in load
-    source, filename, uptodate = self.get_source(environment, name)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 65, in get_source
-    return self._get_source_fast(environment, template)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 99, in _get_source_fast
-    raise TemplateNotFound(template)
-jinja2.exceptions.TemplateNotFound: index.html
-127.0.0.1 - - [12/Sep/2024 16:44:44] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:44] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:44] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=IYAs98zsY2sg7Omg48Uy HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:44] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:57] "GET / HTTP/1.1" 500 -
-Traceback (most recent call last):
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
-    return self.wsgi_app(environ, start_response)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
-    response = self.handle_exception(e)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
-  File "/Users/nivipr/Downloads/templates/app.py", line 11, in index
-    return render_template('index.html', jobs=job_postings.values())
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 149, in render_template
-    template = app.jinja_env.get_or_select_template(template_name_or_list)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 1081, in get_or_select_template
-    return self.get_template(template_name_or_list, parent, globals)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 1010, in get_template
-    return self._load_template(name, globals)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/environment.py", line 969, in _load_template
-    template = self.loader.load(self, name, self.make_globals(globals))
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/jinja2/loaders.py", line 125, in load
-    source, filename, uptodate = self.get_source(environment, name)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 65, in get_source
-    return self._get_source_fast(environment, template)
-  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/flask/templating.py", line 99, in _get_source_fast
-    raise TemplateNotFound(template)
-jinja2.exceptions.TemplateNotFound: index.html
-127.0.0.1 - - [12/Sep/2024 16:44:57] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:57] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:57] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=IYAs98zsY2sg7Omg48Uy HTTP/1.1" 200 -
-127.0.0.1 - - [12/Sep/2024 16:44:57] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+from flask import Flask, request, jsonify, render_template
+import uuid
+import os
 
+# Set the correct path to your templates folder
+template_dir = '/Users/nivipr/Downloads/templates'
+app = Flask(__name__, template_folder=template_dir)
+
+# In-memory storage for job postings (replace with a database in a real application)
+job_postings = {}
+
+@app.route('/')
+def index():
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Template directory: {template_dir}")
+    print(f"Contents of templates directory: {os.listdir(template_dir)}")
+    return render_template('index.html', jobs=job_postings.values())
+
+@app.route('/api/post-job', methods=['POST'])
+def post_job():
+    data = request.json
+    if not all(key in data for key in ['job_title', 'company_name', 'job_description']):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    job_id = str(uuid.uuid4())
+    job_postings[job_id] = {
+        'id': job_id,
+        'title': data['job_title'],
+        'company': data['company_name'],
+        'description': data['job_description']
+    }
+    
+    return jsonify({
+        "message": "Job posted successfully",
+        "job_id": job_id
+    }), 200
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
