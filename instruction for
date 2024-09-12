@@ -1,13 +1,50 @@
+import json
+import urllib.request
+import urllib.error
 
-1. First, search the knowledge base using the GET::x_amz_knowledgebase_YDPRXPOU6G::Search function. Use a query that focuses on the job role, treating the company name as a secondary factor.
+def lambda_handler(event, context):
+    # URL of your talent portal API
+    TALENT_SITE_URL = 'http://your-talent-site-url.com/api/post-job'  # Update this URL
 
-2. If relevant results are found in the knowledge base:
-   a. Use these as a base for the job description.
-   b. Adapt the description to fit the specific company and any unique requirements mentioned by the user.
-   c. If necessary, supplement with additional information from your general knowledge.
-
-3. Only if no relevant results are found in the knowledge base or if the results are insufficient:
-   a. Use the POST::GenerateJobDescription::/generate-job-description function to create a new job description.
-   b. Ensure to include all necessary parameters (position_title, company_name, key_responsibilities, etc.).
-
-4. Always review and refine the final job description to ensure it meets the user's requirements and is tailored to the specific company and role.
+    # Extract job details from the event
+    job_title = event.get('job_title')
+    company_name = event.get('company_name')
+    job_description = event.get('job_description')
+    
+    # Check if all required fields are present
+    if not all([job_title, company_name, job_description]):
+        return {
+            'statusCode': 400,
+            'body': json.dumps('Missing required fields')
+        }
+    
+    # Prepare the data to be sent
+    data = json.dumps({
+        'job_title': job_title,
+        'company_name': company_name,
+        'job_description': job_description
+    }).encode('utf-8')
+    
+    # Prepare the request
+    req = urllib.request.Request(TALENT_SITE_URL, data=data, method='POST')
+    req.add_header('Content-Type', 'application/json')
+    
+    try:
+        # Send the request
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read()
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps(json.loads(response_body))
+        }
+    except urllib.error.HTTPError as e:
+        return {
+            'statusCode': e.code,
+            'body': json.dumps(f'Error posting job: {str(e)}')
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Unexpected error: {str(e)}')
+        }
