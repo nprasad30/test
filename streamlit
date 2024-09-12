@@ -14,7 +14,21 @@ def invoke_agent(input_text):
         sessionId='recruitment-session',
         inputText=input_text
     )
-    return json.loads(response['completion'])
+    # The response structure might be different, so let's print it to see what we're getting
+    print("Raw response:", response)
+    
+    # Attempt to extract the completion from the response
+    if 'completion' in response:
+        completion = response['completion']
+        if isinstance(completion, str):
+            try:
+                return json.loads(completion)
+            except json.JSONDecodeError:
+                return {"error": "Unable to parse response as JSON"}
+        else:
+            return completion
+    else:
+        return {"error": "No completion in response"}
 
 st.title('Recruitment Assistant')
 
@@ -29,7 +43,12 @@ if task == 'Generate Job Description':
         responsibilities_list = key_responsibilities.split('\n')
         input_text = f"Using the job description dataset, generate a job description for {job_title} in {department} with responsibilities: {', '.join(responsibilities_list)}"
         result = invoke_agent(input_text)
-        st.markdown(result['job_description'])
+        if 'error' in result:
+            st.error(result['error'])
+        elif 'job_description' in result:
+            st.markdown(result['job_description'])
+        else:
+            st.write(result)  # Display the raw result if it's not in the expected format
 
 elif task == 'Generate Interview Questions':
     job_title = st.text_input('Job Title')
@@ -38,5 +57,10 @@ elif task == 'Generate Interview Questions':
     if st.button('Generate Interview Questions'):
         input_text = f"Using the interview question bank, generate interview questions for {job_title} with description: {job_description}"
         result = invoke_agent(input_text)
-        for question in result['interview_questions']:
-            st.write(f"- {question}")
+        if 'error' in result:
+            st.error(result['error'])
+        elif 'interview_questions' in result:
+            for question in result['interview_questions']:
+                st.write(f"- {question}")
+        else:
+            st.write(result)  # Display the raw result if it's not in the expected format
