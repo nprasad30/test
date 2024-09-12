@@ -56,3 +56,28 @@ aws ecs create-service \
     --desired-count 1 \
     --launch-type FARGATE \
     --network-configuration "awsvpcConfiguration={subnets=[$subnet_id],securityGroups=[$security_group_id],assignPublicIp=ENABLED}"
+
+
+aws ec2 authorize-security-group-ingress \
+    --group-id $security_group_id \
+    --protocol tcp \
+    --port 80 \
+    --cidr 0.0.0.0/0
+
+aws ecs create-service \
+    --cluster talent-site-cluster \
+    --service-name talent-site-service \
+    --task-definition talent-site-task \
+    --desired-count 1 \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[$public_subnet_id],securityGroups=[$security_group_id],assignPublicIp=ENABLED}"
+
+# Wait for the task to be in RUNNING state
+aws ecs wait tasks-running --cluster talent-site-cluster --tasks $(aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[0]' --output text)
+
+# Get the public IP
+task_arn=$(aws ecs list-tasks --cluster talent-site-cluster --service-name talent-site-service --query 'taskArns[0]' --output text)
+eni_id=$(aws ecs describe-tasks --cluster talent-site-cluster --tasks $task_arn --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+public_ip=$(aws ec2 describe-network-interfaces --network-interface-ids $eni_id --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+
+echo "Your talent site is accessible at: http://$public_ip"
