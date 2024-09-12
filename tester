@@ -1,0 +1,105 @@
+import streamlit as st
+import boto3
+import time
+
+bedrock_agent_runtime = boto3.client('bedrock-agent-runtime')
+
+AGENT_ID = 'your-agent-id'  # Replace with your actual Agent ID
+AGENT_ALIAS_ID = 'your-agent-alias-id'  # Replace with your actual Agent Alias ID
+
+def invoke_agent(input_text, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            st.write(f"Attempt {attempt + 1}: Sending to agent:", input_text)  # Debug output
+            response = bedrock_agent_runtime.invoke_agent(
+                agentId=AGENT_ID,
+                agentAliasId=AGENT_ALIAS_ID,
+                sessionId=f'recruitment-session-{int(time.time())}',
+                inputText=input_text
+            )
+            
+            # Process the EventStream
+            event_stream = response['completion']
+            full_response = ""
+            for event in event_stream:
+                if 'chunk' in event:
+                    chunk = event['chunk']
+                    if 'bytes' in chunk:
+                        full_response += chunk['bytes'].decode('utf-8')
+            
+            st.write("Raw response from agent:", full_response)  # Debug output
+            
+            if "unable to assist" in full_response.lower():
+                st.warning(f"Attempt {attempt + 1}: Agent was unable to assist. Retrying...")
+                time.sleep(2)  # Wait for 2 seconds before retrying
+                continue
+            
+            return full_response.strip()
+        except Exception as e:
+            st.error(f"Error invoking agent (Attempt {attempt + 1}): {str(e)}")
+            if attempt < max_retries - 1:
+                time.sleep(2)  # Wait for 2 seconds before retrying
+            else:
+                return None
+    
+    return "I apologize, but I'm currently having difficulties processing your request. Please try again later or rephrase your query."
+
+def main():
+    st.title('AI Recruitment Assistant')
+
+    task = st.selectbox('Select Task', ['Generate Job Description', 'Generate Interview Questions', 'General Recruitment Query'])
+
+    query = st.text_area('Enter your query', height=200, 
+                         help="For best results, include relevant details such as job title, company name, and key responsibilities in your query.")
+
+    if st.button('Submit Query'):
+        if not query.strip():
+            st.warning("Please enter a query before submitting.")
+            return
+
+        if task == 'Generate Job Description':
+            prompt = f"""Task: Generate a detailed job description based on the following information:
+
+{query}
+
+Please ensure the job description includes:
+1. Job title
+2. Company overview (if provided)
+3. Detailed list of responsibilities
+4. Required qualifications and skills
+5. Preferred qualifications (if any)
+6. Any additional relevant information
+
+Format the response in markdown for better readability."""
+
+        elif task == 'Generate Interview Questions':
+            prompt = f"""Task: Generate a set of relevant interview questions based on the following job information:
+
+{query}
+
+Please provide:
+1. 3-5 technical questions related to the job's primary responsibilities
+2. 2-3 behavioral questions to assess the candidate's soft skills
+3. 1-2 questions about the candidate's experience or background
+4. Any additional questions you think would be valuable for this role
+
+Format the response in markdown, with clear sections for each type of question."""
+
+        else:  # General Recruitment Query
+            prompt = f"""Task: Assist with the following recruitment query:
+
+{query}
+
+Please provide a comprehensive response, addressing all aspects of the query. If any information is missing or unclear, please indicate what additional details would be helpful.
+
+Format the response in markdown for better readability."""
+
+        with st.spinner('Processing your request...'):
+            result = invoke_agent(prompt)
+        
+        if result:
+            st.markdown("### AI Assistant Response:")
+            st.markdown(result)
+
+if __name__ == "__main__":
+    main()
