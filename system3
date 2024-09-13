@@ -1,0 +1,14 @@
+sudo tee /etc/systemd/system/talent-site.service > /dev/null <<EOT
+[Unit]
+Description=Talent Site Flask App
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user
+ExecStart=/usr/bin/python3 /home/ec2-user/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOT
